@@ -117,7 +117,6 @@ const Home: NextPage = () => {
       ;(async () => {
         if (loadedEvent && loadedEvent.eventType === "ROOT") {
           let today = Utils.getMoment(new Date(), loadedEvent.timezone)
-
           let endMin = today.clone().subtract(1, "month").startOf("month").startOf("day").toDate()
 
             let resp = await APIClient().events.getPublicListingEvents({
@@ -144,7 +143,6 @@ const Home: NextPage = () => {
 
             if(firstActiveEvent) {
                 let day = Utils.getMoment(new Date(firstActiveEvent.start), loadedEvent.timezone)
-
                 setSelectedDate(getMonthStart(day.toDate()))
             }
           
@@ -201,7 +199,7 @@ const Home: NextPage = () => {
     return (
       <div className={"selectShowing"}>
         <span className={"backArrow"} onClick={() => setSelectedDay(undefined)}>
-          {"❮ BACK"}
+          {"❮ Back"}
         </span>
         <div className={"header"}>
           <div className={"title"}>SELECT SHOWING</div>
@@ -398,6 +396,8 @@ const Home: NextPage = () => {
           <span className='rbc-toolbar-label'>
             {month[currentMonth]} {currentDate.getFullYear()}
           </span>
+            
+
       </div>
     )
   }
@@ -429,11 +429,11 @@ const Home: NextPage = () => {
 
                 if (itemsForDay?.length) {
                   if (itemsForDay?.find((item) => item.availability == "high")) {
-                    title = "AVAILABLE"
+                    title = "Available"
                   } else if (itemsForDay?.find((item) => item.availability == "low")) {
-                    title = "LAST FEW"
+                    title = "Low Avail"
                   } else if (itemsForDay?.find((item) => item.availability == "soldOut")) {
-                    title = "SOLD OUT"
+                    title = "Sold Out"
                   }
   
                   const aboveThreshCounter = itemsForDay.reduce((acc: any, item: any) => {
@@ -444,7 +444,7 @@ const Home: NextPage = () => {
                   }, 0)
   
                   if (aboveThreshCounter > itemsForDay.length / 2) {
-                    title = "LAST FEW"
+                    title = "Low Avail"
                   }
 
                   if(isPastEvent){
@@ -456,9 +456,10 @@ const Home: NextPage = () => {
                 }
                 
                 return (
-                  <div className={"day-with-event " + ev.event.availability + (ev.event.isPastEvent ? " pastEvent" : "")}>
-                    <p className={"title"}>{title}</p>
-                  </div>
+
+                <div className={"day-with-event " + availibilty + (ev.event.isPastEvent ? " pastEvent" : "")}>
+                  <p className={"title"}>{title}</p>
+                </div>
                 )
               },
               toolbar: CustomToolBar
@@ -478,20 +479,25 @@ const Home: NextPage = () => {
                 (e) =>
                   new Date(e.start).getDate() == event.getDate() && new Date(e.start).getMonth() == event.getMonth(),
               )
-
+              let availability = ""
               let style = {
                 background: "#1b1b1b",
               } as any
               if (itemsForDay?.length) {
 
                 if (itemsForDay?.find((item) => item.availability == "high")) {
+
                   style.borderBottom = "#48b174 thick solid"
+
                 } else if (itemsForDay?.find((item) => item.availability == "low")) {
+
                   style.borderBottom = "#ea7e22 thick solid"
+
                 } else if (itemsForDay?.find((item) => item.availability == "soldOut")) {
-                  // make red if and only if sold out
+
                   style.borderBottom = "#e91e26 thick solid"
                 }
+              
 
                 const aboveThreshCounter = itemsForDay.reduce((acc: any, item: any) => {
                   if (item.availability == "low") {
@@ -527,11 +533,13 @@ const Home: NextPage = () => {
         )}
         {selectedDay && renderDayInfo()}
         {renderAvailabilityIndicators()}
+        {renderMobilePastIndicators()}
       </div>
     )
   }
   // break to mobile if <= 1024px
   const renderMobileCalendar = () => {
+   
     return (
       <div className={"mobile-event-calendar"}>
         {!selectedDay && (
@@ -546,13 +554,14 @@ const Home: NextPage = () => {
             style={{width: "100vw"}}
             components={{
               event: (event) => {
+
                 let itemsForDay = transformEvents()?.filter(
                   (e) =>
                     new Date(e.start).getDate() == new Date(event.event.start).getDate() &&
                     new Date(e.start).getMonth() == new Date(event.event.start).getMonth(),
                 )
-
                 let availability = ""
+                // let totalShows = "zero"
 
                 if (itemsForDay?.length) {
 
@@ -566,7 +575,7 @@ const Home: NextPage = () => {
                   } else if (itemsForDay?.find((item) => item.availability == "soldOut")) {
                     // make red if and only if sold out
                     availability = "soldOut"
-                  }
+                   }
 
                   const aboveThreshCounter = itemsForDay.reduce((acc: any, item: any) => {
                     if (item.availability == "low") {
@@ -582,8 +591,19 @@ const Home: NextPage = () => {
                   if (itemsForDay?.find((item) => item.isPastEvent)) {
                     availability += " pastEvent"
                   }
-                }
 
+                  // if (itemsForDay.length == 1){
+                  //   totalShows = "oneShow"
+                  // }
+                  // if (itemsForDay.length == 2){
+                  //   totalShows = "twoShow"
+                  // }
+                  // if (itemsForDay.length == 3){
+                  //   totalShows = "threeShow"
+                  // }
+
+                }
+                //highlight
                 return (
                   <div className={"day-with-event"}>
                     <div className={"statusDot " + availability}>•</div>
@@ -596,7 +616,8 @@ const Home: NextPage = () => {
               let style = {} as any
 
               if (hasPreviousEvents(new Date(event.start))) {
-                style.display = "none"
+                style.display = "border:3px solid red;"
+                // style.display = "none"
               }
               return {
                 style: style,
